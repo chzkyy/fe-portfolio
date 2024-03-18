@@ -1,22 +1,140 @@
 import React from "react";
-import Tabs  from "./Tabs";
-import About from "./About";
+import Tabs from "./Tabs";
+import axios from "axios";
+import parse from "html-react-parser";
+import $ from "jquery";
+import Loading from "./../loading";
 
+
+let token;
+const url = process.env.REACT_APP_API_URL;
+const signature = process.env.REACT_APP_API_SIGNATURE;
 class Sisi_kanan extends React.Component {
     constructor() {
         super();
         this.state = {
             expanded: true,
-            activeKey: "1"
+            activeKey: "1",
+            portfolio: [],
+            education: [],
+            experience: [],
+            skills: [],
         };
         this.handleSelect = this.handleSelect.bind(this);
     }
     handleSelect(eventKey) {
         this.setState({
-            activeKey: eventKey
+            activeKey: eventKey,
         });
     }
+
+    componentDidMount() {
+        this.data();
+    }
+
+    data = async () => {
+        const headers = {
+            accept: "application/json",
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Credentials": "true",
+            Authorization:
+                "Basic UDAyNzBGMEwxMDo0MzhjODA3ZjNhZDk4OGI2YmNjNDkyZDY3MjUzYTFmMGU5YjAxZjM0OTYzZDQ2N2Q3YTVjNzY2NzY5NGFlZGRm",
+        };
+        var clientCredential = null;
+        await axios
+            .get(url + "clientCredentials", {
+                headers: headers,
+            })
+            .then((response) => {
+                clientCredential = response.data;
+                if (clientCredential.code === 200) {
+                    token = clientCredential.data.token;
+                    this.ApiCall(token);
+                }
+            })
+            .catch((error) => { });
+    };
+
+    ApiCall($token) {
+        // const [portfolio, setPortfolio] = useState([]);
+
+        const options = {
+            headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Credentials": "true",
+                Authorization: "Bearer " + token,
+            },
+        };
+
+        const data = {
+            signature: signature,
+        };
+        
+        // api call
+
+        // portfolio
+        axios.post(url + "portfolio", data, options)
+            .then((response) => {
+                this.setState({ portfolio: response.data });
+            })
+            .catch((error) => { });
+
+        // education
+        axios.post(url + "education", data, options)
+            .then((response) => {
+                this.setState({ education: response.data });
+            })
+            .catch((error) => { });
+
+        // experience
+        axios.post(url + "experience", data, options)
+            .then((response) => {
+                this.setState({ experience: response.data });
+            })
+            .catch((error) => { });
+
+        // skills
+        axios.post(url + "skills", data, options)
+            .then((response) => {
+                this.setState({ skills: response.data });
+            })
+            .catch((error) => { });
+    }
+
+    hide = (index) => {
+        return function (j) {
+            // mendapatkan dropdown yang di klik
+            var dropDown = $(`.acc__panel:eq(${index})`);
+            // membuka dropdown yang di klik dan menutup dropdown yang lain dan menghapus class active
+            $(`.acc__panel`).not(dropDown).slideUp();
+            $(`.acc__title`).not(dropDown).removeClass('active');
+
+            // jika dropdown yang di klik sudah terbuka, dan di klik lagi, maka dropdown akan tertutup serta menghapus class active
+            if($(dropDown).is(":visible")) {
+                // $(dropDown).slideUp();
+                $(`.acc__title:eq(${index})`).removeClass('active');
+            } else {
+                $(`.acc__title:eq(${index})`).addClass('active');
+            }
+            
+
+            $(dropDown).stop(false, true).slideToggle();
+            j.preventDefault();
+        };
+    };
+ 
     render() {
+        // create loading screen while fetching data
+        if (this.state.portfolio.length === 0 || this.state.education.length === 0 || this.state.experience.length === 0 || this.state.skills.length === 0) {
+            return (
+                <div className="loading">
+                    <Loading />
+                </div>
+            );
+        }
         return (
             <div className="col-md-8 SContent">
                 <div className="container_content">
@@ -30,7 +148,80 @@ class Sisi_kanan extends React.Component {
                             aria-labelledby="about-tab"
                             className="tab-pane fade py-4 show active"
                         >
-                            <About />
+                            <div className="section_about">
+                                <div className="scroll">
+                                    <div className="content_about" data-aos="slide-up">
+                                        {/* Education */}
+                                        <div className="education">
+                                            <h1 className="education_title">My Education</h1>
+                                            {this.state.education.data?.map((edu, index) => (
+                                                <div className="education_container" key={index}>
+                                                    <div className="education_time">
+                                                        <span className="education_rounder" />
+                                                        <span className="education_line" />
+                                                    </div>
+                                                    <div className="education_detail mb-4">
+                                                        <h2 className="education_race">{edu.education}</h2>
+                                                        <p className="education_specialty">{edu.specialty}</p>
+                                                        <p className="education_year">{edu.year}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* organisasi */}
+                                        <div className="education">
+                                            <h1 className="organisasi">Experience</h1>
+                                            {this.state.experience.data?.map((exp, index) => (
+                                                <div className="education_container" key={index}>
+                                                    <div className="education_time">
+                                                        <span className="education_rounder" />
+                                                        <span className="education_line" />
+                                                    </div>
+                                                    <div className="education_detail mb-4">
+                                                        <h2 className="education_race"> {exp.position} @{" "} <span className="instansi">{exp.company}</span></h2>
+                                                        <p className="education_year">{exp.role}</p>
+                                                        <p className="education_year">{exp.year}</p>
+                                                        <p className="job_desc">
+                                                            {exp.description.length > 0 ? exp.description.map((desc, index) => (
+                                                                <span key={index}>- {desc}<br /></span>
+                                                            )) : <span> </span>}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* skills */}
+                                        <div className="skills" id="skills">
+                                            <h1 className="section_title">Skills</h1>
+                                            <div className="acc">
+                                                {this.state.skills.data?.map((skill, index) => (
+                                                    <div className="acc__card mb-2" key={index}>
+                                                        {/* create acc title on click */}
+                                                        <div className="acc__title" onClick={this.hide(index)}>{skill.category}</div>
+                                                        <div className="acc__panel">
+                                                            <div className="skill_list grids">
+                                                                {skill.skills?.map((skill, index) => (
+                                                                    <div className="skill_data" key={index}>
+                                                                        <div className="skill_img">
+                                                                            <img src={skill.image} alt={skill.name} />
+                                                                        </div>
+                                                                        <div className="skill_text">
+                                                                            <h3 className="skill_name">{skill.name}</h3>
+                                                                            <p className="skill_desc">{skill.description}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* porto */}
@@ -47,550 +238,122 @@ class Sisi_kanan extends React.Component {
                                         <h1 className="works_title">My Portofolio</h1>
                                         <div className="container-portfolio">
                                             <div className="grid">
-                                                {/* Project 6 */}
-                                                <article>
-                                                    <img src="assets/plant_store.png" alt="Plant_store" />
-                                                    <div className="text">
-                                                        <h3>Plant Store</h3>
-                                                        <p className="Pdesc">
-                                                            Plantstore is a personal project I'm working on.
-                                                        </p>
-                                                        <div className="Ptools">
-                                                            <div className="tools">Flutter</div>
-                                                            <div className="tools">Dart</div>
-                                                            <div className="tools">Figma</div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-detail"
-                                                            data-toggle="modal"
-                                                            data-target="#myModal6"
-                                                        >
-                                                            View Detail
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                                <div id="myModal6" className="modal fade" role="dialog">
-                                                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h4 className="modal-title">Plant Store</h4>
-                                                                <button
-                                                                    type="button"
-                                                                    className="close"
-                                                                    data-dismiss="modal"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-body">
-                                                                <div className="container-body">
-                                                                    <img
-                                                                        src="assets/plant_store.png"
-                                                                        className="img-project"
-                                                                        alt="Cangz"
-                                                                    />
-                                                                </div>
-                                                                <h5 className="Pdesc">
-                                                                    Plantstore is a personal project I'm working on.
-                                                                </h5>
-                                                                <div className="Prole">
-                                                                    <span>
-                                                                        Project Role :{" "}
-                                                                        <b>UI/UX Design and Front End Developer</b>
-                                                                    </span>
-                                                                    <span>- Create UI Design using figma</span>
-                                                                    <span>
-                                                                        - Implement code from UI Design using Flutter
-                                                                        Framework
-                                                                    </span>
-                                                                    <span>
-                                                                        - Create login &amp; register with email
-                                                                    </span>
-                                                                    <span>- Connect to firebase</span>
-                                                                </div>
-                                                                <div className="Ptools">
-                                                                    <div className="tools">Flutter</div>
-                                                                    <div className="tools">Dart</div>
-                                                                    <div className="tools">Figma</div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <a
-                                                                    href="https://github.com/chzkyy/plantstore"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Code
-                                                                    </button>
-                                                                </a>
-                                                                <a
-                                                                    href="https://www.figma.com/file/237hdAvYYdjov8tlWhR7wd/PlantStore?node-id=0%3A1"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Design
-                                                                    </button>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Project 5 */}
-                                                <article>
-                                                    <img src="assets/CangzSkrt.png" alt="Cangz" />
-                                                    <div className="text">
-                                                        <h3>CangzSkrt</h3>
-                                                        <p className="Pdesc">
-                                                            Price information search app on coffeshop.
-                                                        </p>
-                                                        <div className="Ptools">
-                                                            <div className="tools">Flutter</div>
-                                                            <div className="tools">Dart</div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-detail"
-                                                            data-toggle="modal"
-                                                            data-target="#myModal"
-                                                        >
-                                                            View Detail
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                                <div id="myModal" className="modal fade" role="dialog">
-                                                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h4 className="modal-title">CANGZSKRT</h4>
-                                                                <button
-                                                                    type="button"
-                                                                    className="close"
-                                                                    data-dismiss="modal"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-body">
-                                                                <div className="container-body">
-                                                                    <img
-                                                                        src="assets/CangzSkrt.png"
-                                                                        className="img-project"
-                                                                        alt="Cangz"
-                                                                    />
-                                                                </div>
-                                                                <h5 className="Pdesc">
-                                                                    Cangz skrt is an app that aims to find places
-                                                                    we've never known before. As well as helping
-                                                                    people to explore new places nearby.
-                                                                </h5>
-                                                                <div className="Prole">
-                                                                    <span>
-                                                                        Project Role : <b>Front End Developer</b>
-                                                                    </span>
-                                                                    <span>
-                                                                        - Implement code from UI Design using Flutter
-                                                                        Framework
-                                                                    </span>
-                                                                </div>
-                                                                <div className="Ptools">
-                                                                    <div className="tools">Flutter</div>
-                                                                    <div className="tools">Dart</div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <a
-                                                                    href="https://github.com/chzkyy/CangzSkrt"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Code
-                                                                    </button>
-                                                                </a>
-                                                                <a
-                                                                    href="https://drive.google.com/drive/folders/1_37gX4qiLyKa7tYe0QfTmeEWdc4T2h25?usp=sharing"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Project
-                                                                    </button>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Project 4 */}
-                                                <article>
-                                                    <img src="assets/aseekin-laravel.png" alt="Cangz" />
-                                                    <div className="text">
-                                                        <h3>Aseekin</h3>
-                                                        <p className="Pdesc">Web version of Aseekin.</p>
-                                                        <div className="Ptools">
-                                                            <div className="tools">Laravel</div>
-                                                            <div className="tools">Bootstrap</div>
-                                                            <div className="tools">jQuery</div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-detail"
-                                                            data-toggle="modal"
-                                                            data-target="#myModal2"
-                                                        >
-                                                            View Detail
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                                <div id="myModal2" className="modal fade" role="dialog">
-                                                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h4 className="modal-title">
-                                                                    Aseekin - Web Version
-                                                                </h4>
-                                                                <button
-                                                                    type="button"
-                                                                    className="close"
-                                                                    data-dismiss="modal"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-body">
-                                                                <div className="container-body">
-                                                                    <img
-                                                                        src="assets/aseekin-laravel.png"
-                                                                        className="img-project"
-                                                                        alt="Cangz"
-                                                                    />
-                                                                </div>
-                                                                <h5 className="Pdesc">
-                                                                    Aseekin is a mobile app that can help you when
-                                                                    you are traveling, Aseekin can be easily used
-                                                                    because it has several main features needed when
-                                                                    traveling, making your trip easier. Aseekin also
-                                                                    provides information about the range of costs
-                                                                    that you will spend when you travel.
-                                                                </h5>
-                                                                <div className="Prole">
-                                                                    <span>
-                                                                        Project Role :{" "}
-                                                                        <b>Front and Back End Developer</b>
-                                                                    </span>
-                                                                    <span>- Implement code from UI Design</span>
-                                                                    <span>- Create database</span>
-                                                                    <span>
-                                                                        - Connecting the Google API into the website
-                                                                    </span>
-                                                                    <span>
-                                                                        - Connecting front end code into a database
-                                                                    </span>
-                                                                </div>
-                                                                <div className="Ptools">
-                                                                    <div className="tools">Laravel</div>
-                                                                    <div className="tools">Bootstrap</div>
-                                                                    <div className="tools">jQuery</div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <a
-                                                                    href="https://github.com/chzkyy/laravel-aseekin"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Code
-                                                                    </button>
-                                                                </a>
-                                                                <a
-                                                                    href="https://aseekin.cupacu.my.id"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Project
-                                                                    </button>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Project 3 */}
-                                                <article>
-                                                    <img src="assets/vanimals.png" alt="Cangz" />
-                                                    <div className="text">
-                                                        <h3>Vanimals</h3>
-                                                        <p className="Pdesc">
-                                                            Vanimals is an animal voice recognition app.
-                                                        </p>
-                                                        <div className="Ptools">
-                                                            <div className="tools">Flutter</div>
-                                                            <div className="tools">Dart</div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-detail"
-                                                            data-toggle="modal"
-                                                            data-target="#myModal3"
-                                                        >
-                                                            View Detail
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                                <div id="myModal3" className="modal fade" role="dialog">
-                                                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h4 className="modal-title">Vanimals</h4>
-                                                                <button
-                                                                    type="button"
-                                                                    className="close"
-                                                                    data-dismiss="modal"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-body">
-                                                                <div className="container-body">
-                                                                    <img
-                                                                        src="assets/vanimals.png"
-                                                                        className="img-project"
-                                                                        alt="Cangz"
-                                                                    />
-                                                                </div>
-                                                                <h5 className="Pdesc">
-                                                                    Vanimals is an animal voice recognition app,
-                                                                    vanimals created aimed at introducing animals to
-                                                                    children. This app is created using flutter
-                                                                    framework.
-                                                                </h5>
-                                                                <div className="Prole">
-                                                                    <span>
-                                                                        Project Role : <b>Front End Developer</b>
-                                                                    </span>
-                                                                    <span>
-                                                                        - Implement code from UI Design using Flutter
-                                                                        Framework
-                                                                    </span>
-                                                                </div>
-                                                                <div className="Ptools">
-                                                                    <div className="tools">Flutter</div>
-                                                                    <div className="tools">Dart</div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <a
-                                                                    href="https://github.com/chzkyy/flutter-vanimals"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Code
-                                                                    </button>
-                                                                </a>
-                                                                <a
-                                                                    href="https://drive.google.com/file/d/1mNtDW9iexd7fvnSceCKv0TlDQfTD2uKl/view?usp=sharing"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Project
-                                                                    </button>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                {/* Project 2 */}
-                                                <article>
-                                                    <img src="assets/MelekTech.png" alt="Cangz" />
-                                                    <div className="text">
-                                                        <h3>MelekTech</h3>
-                                                        <p className="Pdesc">
-                                                            MelekTech is a website that connect business owner
-                                                            with freelances.
-                                                        </p>
-                                                        <div className="Ptools">
-                                                            <div className="tools">Figma</div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-detail"
-                                                            data-toggle="modal"
-                                                            data-target="#myModal4"
-                                                        >
-                                                            View Detail
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                                <div id="myModal4" className="modal fade" role="dialog">
-                                                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h4 className="modal-title">MelekTech</h4>
-                                                                <button
-                                                                    type="button"
-                                                                    className="close"
-                                                                    data-dismiss="modal"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-body">
-                                                                <div className="container-body">
-                                                                    <img
-                                                                        src="assets/MelekTech.png"
-                                                                        className="img-project"
-                                                                        alt="Cangz"
-                                                                    />
-                                                                </div>
-                                                                <h5 className="Pdesc">
-                                                                    MelekTech is a website that connect business
-                                                                    owner with freelances. we intend to help
-                                                                    business to grow and adept to digitalized era.
-                                                                    with this platfrom We have some features like
-                                                                    forum that can be used for discussions for
-                                                                    business owner to other business owner, matching
-                                                                    business owner to freelancers etc.
-                                                                </h5>
-                                                                <div className="Prole">
-                                                                    <span>
-                                                                        Project Role : <b>UI/UX Design</b>
-                                                                    </span>
-                                                                    <span>
-                                                                        - Collaborate with other designers to conduct
-                                                                        user research (remote interviews).
-                                                                    </span>
-                                                                    <span>
-                                                                        - Create site map, user flow, wireframes,
-                                                                        lo-fi, hi-fi and prototype.
-                                                                    </span>
-                                                                </div>
-                                                                <div className="Ptools">
-                                                                    <div className="tools">Figma</div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <a
-                                                                    href="https://www.figma.com/proto/kYBqc0jNeLFyAZw51H0qLs/Hackathon?node-id=59%3A70&scaling=min-zoom&page-id=0%3A1"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Prototype
-                                                                    </button>
-                                                                </a>
-                                                                <a
-                                                                    href="https://www.figma.com/file/kYBqc0jNeLFyAZw51H0qLs/Hackathon?node-id=0%3A1"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Project
-                                                                    </button>
-                                                                </a>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                                 {/* Project 1 */}
-                                                <article>
-                                                    <img src="assets/ux-aseekin.png" alt="Cangz" />
-                                                    <div className="text">
-                                                        <h3>Aseekin</h3>
-                                                        <p className="Pdesc">
-                                                            Aseekin is a mobile app that can help you when you
-                                                            are traveling.
-                                                        </p>
-                                                        <div className="Ptools">
-                                                            <div className="tools">Figma</div>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            className="btn-detail"
-                                                            data-toggle="modal"
-                                                            data-target="#myModal5"
-                                                        >
-                                                            View Detail
-                                                        </button>
-                                                    </div>
-                                                </article>
-                                                <div id="myModal5" className="modal fade" role="dialog">
-                                                    <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-                                                        <div className="modal-content">
-                                                            <div className="modal-header">
-                                                                <h4 className="modal-title">Aseekin - UI</h4>
-                                                                <button
-                                                                    type="button"
-                                                                    className="close"
-                                                                    data-dismiss="modal"
-                                                                >
-                                                                    ×
-                                                                </button>
-                                                            </div>
-                                                            <div className="modal-body">
-                                                                <div className="container-body">
-                                                                    <img
-                                                                        src="assets/ux-aseekin.png"
-                                                                        className="img-project"
-                                                                        alt="Cangz"
-                                                                    />
-                                                                </div>
-                                                                <h5 className="Pdesc">
-                                                                    Aseekin is a mobile app that can help you when
-                                                                    you are traveling, Aseekin can be easily used
-                                                                    because it has several main features needed when
-                                                                    traveling, making your trip easier. Aseekin also
-                                                                    provides information about the range of costs
-                                                                    that you will spend when you travel. Aseekin can
-                                                                    also be your tour guide and this application can
-                                                                    show you some recommended tourist destinations
-                                                                    in the city.
-                                                                </h5>
-                                                                <div className="Prole">
-                                                                    <span>
-                                                                        Project Role : <b>UI/UX Designer</b>
-                                                                    </span>
-                                                                    <span>
-                                                                        - Collaborate with other designers to conduct
-                                                                        user research (interviews using
-                                                                        questionnaires)
-                                                                    </span>
-                                                                    <span>
-                                                                        - Create wireframes, lo-fi, hi-fi and
-                                                                        prototype
-                                                                    </span>
-                                                                </div>
-                                                                <div className="Ptools">
-                                                                    <div className="tools">Figma</div>
-                                                                </div>
-                                                            </div>
-                                                            <div className="modal-footer">
-                                                                <a
-                                                                    href="https://www.figma.com/proto/otMh7TaruYdioGOa4o598M/ASeekin_Final?node-id=6%3A30&scaling=scale-down&page-id=0%3A1&starting-point-node-id=1%3A78"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Prototype
+                                                {this.state.portfolio.data?.sort((a, b) => a.id - b.id).reverse().slice(0, 6)
+                                                .map(
+                                                    (port, index) => (
+                                                        <div className="grid2" key={index}>
+                                                            <article>
+                                                                <img src={port.image} alt={port.name} />
+                                                                <div className="text">
+                                                                    <h3>{port.name}</h3>
+                                                                    <p className="Pdesc">
+                                                                        {port.short_description}
+                                                                    </p>
+                                                                    <div className="Ptools">
+                                                                        {/* pisahkan tools berdasarkan , */}
+                                                                        {port.tools
+                                                                            .split(",")
+                                                                            .map((tool, index) => (
+                                                                                <div className="tools" key={index}>
+                                                                                    {tool}
+                                                                                </div>
+                                                                            ))}
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        className="btn-detail"
+                                                                        data-toggle="modal"
+                                                                        data-target={`#myModal_${index}`}
+                                                                    >
+                                                                        View Detail
                                                                     </button>
-                                                                </a>
-                                                                <a
-                                                                    href="https://www.figma.com/file/otMh7TaruYdioGOa4o598M/ASeekin_Final?node-id=6%3A30"
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                >
-                                                                    <button type="button" className="btn-view">
-                                                                        View Project
-                                                                    </button>
-                                                                </a>
+                                                                </div>
+                                                            </article>
+
+                                                            {/* Modal */}
+                                                            <div
+                                                                id={`myModal_${index}`}
+                                                                className="modal fade"
+                                                                role="dialog"
+                                                            >
+                                                                <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                                                                    <div className="modal-content">
+                                                                        <div className="modal-header">
+                                                                            <h4 className="modal-title">
+                                                                                {port.name}
+                                                                            </h4>
+                                                                            <button
+                                                                                type="button"
+                                                                                className="close"
+                                                                                data-dismiss="modal"
+                                                                            >
+                                                                                ×
+                                                                            </button>
+                                                                        </div>
+                                                                        <div className="modal-body">
+                                                                            <div className="container-body">
+                                                                                <img
+                                                                                    src={port.image}
+                                                                                    className="img-project"
+                                                                                    alt={port.name}
+                                                                                />
+                                                                            </div>
+                                                                            <h5 className="Pdesc">
+                                                                                {parse(port.long_description)}
+                                                                            </h5>
+                                                                            <div className="Prole">
+                                                                                <span>
+                                                                                    Project Role :{" "}
+                                                                                    <b>{parse(port.role)}</b>
+                                                                                </span>
+                                                                                <span>
+                                                                                    {parse(port.project_role_description)}
+                                                                                </span>
+                                                                            </div>
+                                                                            <div className="Ptools">
+                                                                                {port.tools
+                                                                                    .split(",")
+                                                                                    .map((tool, index) => (
+                                                                                        <div className="tools" key={index}>
+                                                                                            {tool}
+                                                                                        </div>
+                                                                                    ))}
+                                                                            </div>
+                                                                        </div>
+                                                                        <div className="modal-footer">
+                                                                            <a
+                                                                                href={port.link_project}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                            >
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="btn-view"
+                                                                                >
+                                                                                    View Prototype
+                                                                                </button>
+                                                                            </a>
+                                                                            <a
+                                                                                href={port.link_github}
+                                                                                target="_blank"
+                                                                                rel="noopener noreferrer"
+                                                                            >
+                                                                                <button
+                                                                                    type="button"
+                                                                                    className="btn-view"
+                                                                                >
+                                                                                    View Project
+                                                                                </button>
+                                                                            </a>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                </div>
+                                                    ),
+                                                    []
+                                                )}
                                             </div>
                                         </div>
                                     </div>
