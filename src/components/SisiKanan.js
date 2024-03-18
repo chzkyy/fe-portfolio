@@ -9,6 +9,7 @@ import Loading from "./../loading";
 let token;
 const url = process.env.REACT_APP_API_URL;
 const signature = process.env.REACT_APP_API_SIGNATURE;
+const auth = process.env.REACT_APP_API_AUTH;
 class Sisi_kanan extends React.Component {
     constructor() {
         super();
@@ -39,7 +40,7 @@ class Sisi_kanan extends React.Component {
             "Access-Control-Allow-Origin": "*",
             "Access-Control-Allow-Credentials": "true",
             Authorization:
-                "Basic UDAyNzBGMEwxMDo0MzhjODA3ZjNhZDk4OGI2YmNjNDkyZDY3MjUzYTFmMGU5YjAxZjM0OTYzZDQ2N2Q3YTVjNzY2NzY5NGFlZGRm",
+                "Basic "+ auth,
         };
         var clientCredential = null;
         await axios
