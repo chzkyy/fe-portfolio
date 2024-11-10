@@ -4,6 +4,7 @@ import axios from "axios";
 import parse from "html-react-parser";
 import $ from "jquery";
 import Loading from "./../loading";
+import DOMPurify from 'dompurify';
 
 
 let token;
@@ -183,11 +184,9 @@ class Sisi_kanan extends React.Component {
                                                         <h2 className="education_race"> {exp.position} @{" "} <span className="instansi">{exp.company}</span></h2>
                                                         <p className="education_year">{exp.role}</p>
                                                         <p className="education_year">{exp.year}</p>
-                                                        <p className="job_desc">
-                                                            {exp.description.length > 0 ? exp.description.map((desc, index) => (
-                                                                <span key={index}>- {desc}<br /></span>
-                                                            )) : <span> </span>}
-                                                        </p>
+                                                        <div className="job_desc">
+                                                            {parse(DOMPurify.sanitize(exp.description))}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))}

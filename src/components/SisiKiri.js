@@ -1,6 +1,6 @@
 import React from "react";
 
-class Sisi_kiri extends React.Component {
+class SisiKiri extends React.Component {
     constructor() {
         super();
         this.state = {
@@ -9,28 +9,30 @@ class Sisi_kiri extends React.Component {
         };
         this.handleSelect = this.handleSelect.bind(this);
     }
+
     handleSelect(eventKey) {
         this.setState({
             activeKey: eventKey
         });
     }
-    render() {
 
+    render() {
         const about = (
             <p>
                 Full Stack Developer
             </p>
-        )
+        );
 
-        const contact_me = (
+        const contactMe = (
             <a
                 className="btn btn-contact d-flex justify-content-center align-content-center align-items-center mt-4"
-                href="mailto:ftrizkyy@gmail.com">
+                href="mailto:ftrizkyy@gmail.com"
+            >
                 Contact Me!
             </a>
-        )
-        
-        const sosmed = [
+        );
+
+        const socialLinks = [
             {
                 name: "linkedin",
                 link: "https://www.linkedin.com/in/rizkyfachurahman/",
@@ -39,47 +41,46 @@ class Sisi_kiri extends React.Component {
             {
                 name: "github",
                 link: "https://github.com/chzkyy",
-                icon: "fa fa-github",
+                icon: "fa fa-github"
             },
             {
                 name: "instagram",
                 link: "https://www.instagram.com/_chzky/",
-                icon: "fa fa-instagram",
+                icon: "fa fa-instagram"
             },
             {
                 name: "behance",
                 link: "https://www.behance.net/rizkyfachurahman",
-                icon: "fa fa-behance",
+                icon: "fa fa-behance"
             }
-        ]
+        ];
 
-        const profile_picture = "/assets/profile.png";
+        const profilePicture = "/assets/profile.png";
 
         return (
             <div className="col-md-4 SKiri">
-                <div className="info mt-4" data-aos="fade-in">
+                <div className="info" data-aos="fade-in">
                     <div className="img-profile">
                         <img
-                            src={profile_picture}
+                            src={profilePicture}
                             alt="profile"
                             className="rounded-circle profile"
                         />
                     </div>
                     <div className="home_social">
-                        {sosmed.map((sosmed, index) => {
+                        {socialLinks.map((social, index) => {
                             return (
                                 <a
-                                    href={sosmed.link}
+                                    href={social.link}
                                     rel="noopener noreferrer"
                                     className="home_social-link"
-                                    aria-label={sosmed.name}
+                                    aria-label={social.name}
                                     aria-hidden="true"
-                                    key={index}
-
+                                    key={social.name} // Use unique name instead of index
                                 >
-                                    <i className={sosmed.icon} />
+                                    <i className={social.icon} />
                                 </a>
-                            )
+                            );
                         })}
                     </div>
                     <div className="about-us">
@@ -89,7 +90,7 @@ class Sisi_kiri extends React.Component {
                         <div className="about">
                             {about}
                         </div>
-                            {contact_me}
+                        {contactMe}
                     </div>
                 </div>
             </div>
@@ -97,4 +98,4 @@ class Sisi_kiri extends React.Component {
     }
 }
 
-export default Sisi_kiri;
+export default SisiKiri;
