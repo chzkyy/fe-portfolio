@@ -194,7 +194,7 @@ class Sisi_kanan extends React.Component {
 
                                         {/* skills */}
                                         <div className="skills" id="skills">
-                                            <h1 className="section_title">Skills</h1>
+                                            <h1 className="section_title">Technologies</h1>
                                             <div className="acc">
                                                 {this.state.skills.data?.map((skill, index) => (
                                                     <div className="acc__card mb-2" key={index}>
