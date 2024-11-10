@@ -154,7 +154,7 @@ class Sisi_kanan extends React.Component {
                                     <div className="content_about" data-aos="slide-up">
                                         {/* Education */}
                                         <div className="education">
-                                            <h1 className="education_title">My Education</h1>
+                                            <h1 className="education_title">Education</h1>
                                             {this.state.education.data?.map((edu, index) => (
                                                 <div className="education_container" key={index}>
                                                     <div className="education_time">
@@ -236,7 +236,7 @@ class Sisi_kanan extends React.Component {
                                 <div className="scroll">
                                     {/* portfolio */}
                                     <div className="portfolio" data-aos="fade-in">
-                                        <h1 className="works_title">My Portofolio</h1>
+                                        <h1 className="works_title">Portofolio</h1>
                                         <div className="container-portfolio">
                                             <div className="grid">
                                                 {/* Project 1 */}

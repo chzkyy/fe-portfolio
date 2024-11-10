@@ -18,7 +18,7 @@ class Tabs extends React.Component {
 
         const tabs = [
             {
-                name : "About Me",
+                name : "About",
                 id : "about-tab",
                 controls: 'about',
                 active : "true",

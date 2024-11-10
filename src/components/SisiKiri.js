@@ -18,8 +18,7 @@ class Sisi_kiri extends React.Component {
 
         const about = (
             <p>
-                I‘am focus in Web Developer and interested in UI/UX Design and
-                Mobile Development
+                Full Stack Developer
             </p>
         )
 
@@ -58,7 +57,7 @@ class Sisi_kiri extends React.Component {
 
         return (
             <div className="col-md-4 SKiri">
-                <div className="info" data-aos="fade-in">
+                <div className="info mt-4" data-aos="fade-in">
                     <div className="img-profile">
                         <img
                             src={profile_picture}
