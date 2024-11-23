@@ -1,61 +1,54 @@
 import React from "react";
 
 class Tabs extends React.Component {
-    constructor() {
-        super();
-        this.state = {
-            expanded: true,
-            activeKey: "1"
-        };
-        this.handleSelect = this.handleSelect.bind(this);
-    }
-    handleSelect(eventKey) {
-        this.setState({
-            activeKey: eventKey
-        });
-    }
     render() {
-
         const tabs = [
             {
-                name : "About",
-                id : "about-tab",
-                controls: 'about',
-                active : "true",
-                selected : 'active'
+                name: "About",
+                id: "about-tab",
+                controls: "about",
+                key: "1",
             },
             {
-                name : "Portofolio",
-                id : "portofolio-tab",
-                controls: 'portofolio',
-                active : "false",
-                selected : ''
-            }
-        ]
-        
+                name: "Portfolio",
+                id: "portofolio-tab",
+                controls: "portofolio",
+                key: "2",
+            },
+        ];
+
         return (
             <ul
                 className="nav nav-tabs nav-pills flex-column flex-sm-row text-center border-0 rounded-nav"
                 id="myTab"
                 role="tablist"
-                aria-owns="about-tab portofolio-tab"
             >
-                {tabs.map((tab, index) => (
-                    <li className="nav-item flex-sm-fill" key={index}>
+                {tabs.map((tab) => (
+                    <li
+                        className="nav-item flex-sm-fill"
+                        key={tab.key}
+                        role="presentation"
+                    >
                         <a
-                            id={`${tab.id}-tab`}
-                            data-toggle="tab"
+                            id={tab.id}
                             href={`#${tab.controls}`}
+                            className={`nav-link border-0 font-weight-bold ${
+                                this.props.activeKey === tab.key ? "active" : ""
+                            }`}
                             role="tab"
-                            aria-controls={`${tab.controls}`}
-                            aria-selected={tab.active}
-                            className={`nav-link border-0 font-weight-bold ${tab.selected ? "active" : ""}`}
+                            aria-controls={tab.controls}
+                            aria-selected={
+                                this.props.activeKey === tab.key ? "true" : "false"
+                            }
+                            onClick={(e) => {
+                                e.preventDefault();
+                                this.props.onSelect(tab.key);
+                            }}
                         >
                             {tab.name}
                         </a>
                     </li>
                 ))}
-                    
             </ul>
         );
     }

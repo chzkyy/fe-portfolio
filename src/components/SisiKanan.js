@@ -4,19 +4,18 @@ import axios from "axios";
 import parse from "html-react-parser";
 import $ from "jquery";
 import Loading from "./../loading";
-import DOMPurify from 'dompurify';
-
+import DOMPurify from "dompurify";
 
 let token;
 const url = process.env.REACT_APP_API_URL;
 const signature = process.env.REACT_APP_API_SIGNATURE;
 const auth = process.env.REACT_APP_API_AUTH;
+
 class Sisi_kanan extends React.Component {
     constructor() {
         super();
         this.state = {
-            expanded: true,
-            activeKey: "1",
+            activeKey: "1", // Tab aktif
             portfolio: [],
             education: [],
             experience: [],
@@ -24,6 +23,7 @@ class Sisi_kanan extends React.Component {
         };
         this.handleSelect = this.handleSelect.bind(this);
     }
+
     handleSelect(eventKey) {
         this.setState({
             activeKey: eventKey,
@@ -38,72 +38,43 @@ class Sisi_kanan extends React.Component {
         const headers = {
             accept: "application/json",
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Credentials": "true",
-            Authorization:
-                "Basic "+ auth,
+            Authorization: "Basic " + auth,
         };
-        var clientCredential = null;
-        await axios
-            .get(url + "clientCredentials", {
-                headers: headers,
-            })
-            .then((response) => {
-                clientCredential = response.data;
-                if (clientCredential.code === 200) {
-                    token = clientCredential.data.token;
-                    this.ApiCall(token);
-                }
-            })
-            .catch((error) => { });
+
+        try {
+            const response = await axios.get(url + "clientCredentials", { headers });
+            if (response.data.code === 200) {
+                token = response.data.data.token;
+                this.ApiCall(token);
+            }
+        } catch (error) {
+            console.error("Error fetching client credentials:", error);
+        }
     };
 
-    ApiCall($token) {
-        // const [portfolio, setPortfolio] = useState([]);
-
+    ApiCall(token) {
         const options = {
             headers: {
                 accept: "application/json",
                 "Content-Type": "application/json",
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Credentials": "true",
                 Authorization: "Bearer " + token,
             },
         };
 
-        const data = {
-            signature: signature,
-        };
-        
-        // api call
+        const data = { signature };
 
-        // portfolio
-        axios.post(url + "portfolio", data, options)
-            .then((response) => {
-                this.setState({ portfolio: response.data });
-            })
-            .catch((error) => { });
-
-        // education
-        axios.post(url + "education", data, options)
-            .then((response) => {
-                this.setState({ education: response.data });
-            })
-            .catch((error) => { });
-
-        // experience
-        axios.post(url + "experience", data, options)
-            .then((response) => {
-                this.setState({ experience: response.data });
-            })
-            .catch((error) => { });
-
-        // skills
-        axios.post(url + "skills", data, options)
-            .then((response) => {
-                this.setState({ skills: response.data });
-            })
-            .catch((error) => { });
+        axios.post(url + "portfolio", data, options).then((res) =>
+            this.setState({ portfolio: res.data })
+        );
+        axios.post(url + "education", data, options).then((res) =>
+            this.setState({ education: res.data })
+        );
+        axios.post(url + "experience", data, options).then((res) =>
+            this.setState({ experience: res.data })
+        );
+        axios.post(url + "skills", data, options).then((res) =>
+            this.setState({ skills: res.data })
+        );
     }
 
     hide = (index) => {
@@ -127,29 +98,41 @@ class Sisi_kanan extends React.Component {
             j.preventDefault();
         };
     };
- 
+
     render() {
-        // create loading screen while fetching data
-        if (this.state.portfolio.length === 0 || this.state.education.length === 0 || this.state.experience.length === 0 || this.state.skills.length === 0) {
+        if (
+            !this.state.portfolio.data ||
+            !this.state.education.data ||
+            !this.state.experience.data ||
+            !this.state.skills.data
+        ) {
             return (
                 <div className="loading">
                     <Loading />
                 </div>
             );
         }
+
         return (
             <div className="col-md-8 SContent">
                 <div className="container_content">
-                    {/* tabs  */}
-                    <Tabs />
+                    {/* Tabs */}
+                    <Tabs
+                        activeKey={this.state.activeKey}
+                        onSelect={this.handleSelect}
+                    />
 
                     <div id="myTabContent" className="tab-content">
+                        {/* About Tab */}
                         <div
                             id="about"
                             role="tabpanel"
                             aria-labelledby="about-tab"
-                            className="tab-pane fade py-4 show active"
+                            className={`tab-pane fade py-4 ${
+                                this.state.activeKey === "1" ? "show active" : ""
+                            }`}
                         >
+                            
                             <div className="section_about">
                                 <div className="scroll">
                                     <div className="content_about" data-aos="slide-up">
@@ -224,12 +207,14 @@ class Sisi_kanan extends React.Component {
                             </div>
                         </div>
 
-                        {/* porto */}
+                        {/* Portfolio Tab */}
                         <div
                             id="portofolio"
                             role="tabpanel"
                             aria-labelledby="portofolio-tab"
-                            className="tab-pane fade py-4"
+                            className={`tab-pane fade py-4 ${
+                                this.state.activeKey === "2" ? "show active" : ""
+                            }`}
                         >
                             <div className="section_portfolio">
                                 <div className="scroll">

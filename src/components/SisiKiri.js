@@ -68,28 +68,24 @@ class SisiKiri extends React.Component {
                         />
                     </div>
                     <div className="home_social">
-                        {socialLinks.map((social, index) => {
-                            return (
-                                <a
-                                    href={social.link}
-                                    rel="noopener noreferrer"
-                                    className="home_social-link"
-                                    aria-label={social.name}
-                                    aria-hidden="true"
-                                    key={social.name} // Use unique name instead of index
-                                >
-                                    <i className={social.icon} />
-                                </a>
-                            );
-                        })}
+                        {socialLinks.map((social) => (
+                            <a
+                                href={social.link}
+                                rel="noopener noreferrer"
+                                className="home_social-link"
+                                aria-label={social.name} // Deskripsi tautan untuk aksesibilitas
+                                key={social.name} // Gunakan nama unik
+                            >
+                                {/* Ikon diberi aria-hidden */}
+                                <i className={social.icon} aria-hidden="true" />
+                            </a>
+                        ))}
                     </div>
                     <div className="about-us">
                         <div className="nama">
                             <h1>Rizky Fachurahman</h1>
                         </div>
-                        <div className="about">
-                            {about}
-                        </div>
+                        <div className="about">{about}</div>
                         {contactMe}
                     </div>
                 </div>
